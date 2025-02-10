@@ -1,35 +1,23 @@
 <?php
 
+use Core\App;
 use Core\Database;
 
-$config = require base_path('config.php');
-$db = new Database($config['database']);
+$db = App::resolve(Database::class);
 
 $currentUserId = 1;
 
-// Kinda gross, yes? We'll refactor toward a cleaner approach in episode 33.
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $note = $db->query('select * from notes where id = :id', [
-        'id' => $_GET['id']
-    ])->findOrFail();
+var_dump($_POST);
 
-    authorize($note['user_id'] === $currentUserId);
+$note = $db->query('select * from notes where id = :id', [
+    'id' => $_POST['id']
+])->findOrFail();
 
-    $db->query('delete from notes where id = :id', [
-        'id' => $_GET['id']
-    ]);
+authorize($note['user_id'] === $currentUserId);
 
-    header('location: /notes');
-    exit();
-} else {
-    $note = $db->query('select * from notes where id = :id', [
-        'id' => $_GET['id']
-    ])->findOrFail();
+$db->query('delete from notes where id = :id', [
+    'id' => $_POST['id']
+]);
 
-    authorize($note['user_id'] === $currentUserId);
-
-    view("notes/show.view.php", [
-        'heading' => 'Note',
-        'note' => $note
-    ]);
-}
+header('location: /notes');
+exit();
